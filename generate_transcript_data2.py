@@ -11,11 +11,14 @@ def parse_conversation(df):
             drop_rows.append(i - 1)
     df = df.drop(drop_rows)
     #df = df[df.speaker == 'Participant']["value"].apply(lambda x: re.sub("<.*>", "", x))
+    df['value'] = df['value'].str.replace('[^\w\s]',' ')
+    df['value'] = df['value'].str.lower()
+    df['value'] = df['value'] + " ."
     df = df[df != ""]
     return df
 
 convs = []
-for i in range(300,301):
+for i in range(300,350):
     try:
         df = pd.read_csv('DAIC/' + str(i) + '_TRANSCRIPT.csv', delimiter="\t")
         convs.append(parse_conversation(df))
@@ -30,7 +33,7 @@ for i in convs:
     transcript = dict()
     conversation = list()
     for _, row in i.iterrows():
-        conversation.append(row['value'] + '. ')
+        conversation.append(row['value'] + ".")
     conversation = [sent[:-1] for sent in conversation[:-20]]
     transcript['personality'] = "I am depressed"
     depressed_convo = conversation[1::2]
