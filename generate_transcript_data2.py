@@ -10,10 +10,8 @@ def parse_conversation(df):
             df.loc[i, "value"] = str(df.loc[i - 1, "value"]) + " " + str(df.loc[i, "value"])
             drop_rows.append(i - 1)
     df = df.drop(drop_rows)
-    #df = df[df.speaker == 'Participant']["value"].apply(lambda x: re.sub("<.*>", "", x))
-    df['value'] = df['value'].str.replace('[^\w\s]',' ')
+    df['value'] = df['value'] + " . "
     df['value'] = df['value'].str.lower()
-    df['value'] = df['value'] + " ."
     df = df[df != ""]
     return df
 
@@ -33,7 +31,7 @@ for i in convs:
     transcript = dict()
     conversation = list()
     for _, row in i.iterrows():
-        conversation.append(row['value'] + ".")
+        conversation.append(row['value'])
     conversation = [sent[:-1] for sent in conversation[:-20]]
     transcript['personality'] = "I am depressed"
     depressed_convo = conversation[1::2]
