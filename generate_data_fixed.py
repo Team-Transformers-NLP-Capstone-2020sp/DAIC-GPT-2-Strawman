@@ -1,6 +1,10 @@
 import pandas as pd, numpy as np
 import re, os
 import json
+import nltk
+nltk.download('vader_lexicon')
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
 
 def parse_conversation(df):
     drop_rows = []
@@ -15,8 +19,21 @@ def parse_conversation(df):
     df = df.drop(drop_rows)
     df['value'] = df['value'] + " . "
     df['value'] = df['value'].str.lower()
-    df = df[df != ""]
+    df = df[df != ""].reset_index(drop=True)
+    df.loc[0, "value"] = "hi, how are you ?"
+
     return df
+
+sid = SentimentIntensityAnalyzer()
+def polarity(sentence):
+    score = sid.polarity_scores(depressed_convo[p_num])["compound"]
+    if score <= -0.05:
+        return "<negative>"
+    elif score >= 0.05:
+        return "<positive>"
+    else:
+        return "<neutral>"
+
 
 def get_personality(num):
     personality = []
@@ -30,7 +47,7 @@ def get_personality(num):
 
 convs = []
 personalities = []
-for i in range(399,400):
+for i in range(375,396):
     try:
         df = pd.read_csv('DAIC/' + str(i) + '_TRANSCRIPT.csv', delimiter="\t")
         convs.append(parse_conversation(df))
@@ -58,6 +75,8 @@ for conv_num, conv in enumerate(convs):
         example = {}
         example['candidates'] = [depressed_convo[j] for j in range(len(depressed_convo)) if j != p_num] + [depressed_convo[p_num]]
         example['history'] = conversation[:i]
+        example['history'].append("<sentiment>")
+        example['history'].append(polarity(depressed_convo[p_num]))
         examples.append(example)
     transcript['utterances'] = examples
     transcripts.append(transcript)
